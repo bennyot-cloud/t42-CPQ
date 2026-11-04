@@ -3,103 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>t42 CPQ System</title>
+    <title>t42 Enterprise CPQ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
-        .controls { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .controls button, .controls select { padding: 10px 15px; border: 1px solid #ccc; border-radius: 4px; background: #0056b3; color: white; cursor: pointer; font-size: 14px; }
-        .controls select { background: #fff; color: #333; }
-        .controls button:hover { background: #004494; }
+        /* Corporate Enterprise Theme */
+        body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background: #eef2f5; color: #1e293b; margin: 0; padding: 20px; }
         
-        #quote-document { background: #fff; padding: 30px 40px; border-radius: 2px; max-width: 900px; margin: 0 auto; position: relative; box-sizing: border-box; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0056b3; padding-bottom: 15px; margin-bottom: 15px; }
-        .logo-area img { max-height: 70px; object-fit: contain; }
-        .logo-area h1 { margin: 0; color: #0056b3; font-size: 42px; font-weight: bold; display: none; }
-        .doc-info { text-align: right; font-size: 14px; line-height: 1.6; }
+        /* Toolbar */
+        .controls { background: #fff; padding: 15px 25px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; gap: 15px; align-items: center; flex-wrap: wrap; max-width: 950px; margin-left: auto; margin-right: auto; box-sizing: border-box; border: 1px solid #e2e8f0; }
+        .controls button, .controls select { padding: 10px 18px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #334155; cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .controls button:hover, .controls select:hover { border-color: #94a3b8; background: #f8fafc; }
+        .controls .btn-primary { background: #0f172a; color: white; border: none; }
+        .controls .btn-primary:hover { background: #1e293b; }
+        .controls .btn-success { background: #059669; color: white; border: none; margin-left: auto; }
+        .controls .btn-success:hover { background: #047857; }
+
+        /* Main Document Container */
+        #quote-document { background: #fff; padding: 50px 60px; border-radius: 4px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-width: 950px; margin: 0 auto; box-sizing: border-box; position: relative; }
         
-        .customer-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .info-box { width: 48%; }
-        .info-box input, .info-box textarea { width: 100%; border: 1px dashed #ccc; padding: 5px; margin-top: 5px; font-family: inherit; box-sizing: border-box; }
+        /* Header section */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 30px; margin-bottom: 35px; }
+        .logo-area img { max-height: 100px; object-fit: contain; } /* לוגו מוגדל */
+        .doc-meta { display: grid; grid-template-columns: auto auto; gap: 8px 25px; font-size: 13px; color: #475569; align-items: center; }
+        .doc-meta strong { color: #0f172a; font-weight: 600; }
+        .doc-meta input { border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; color: #0f172a; padding: 4px; width: 110px; transition: 0.2s; }
+        .doc-meta input:hover, .doc-meta input:focus { border-color: #cbd5e1; background: #f8fafc; border-radius: 4px; }
+        .doc-title-main { font-size: 24px; font-weight: 300; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; grid-column: span 2; text-align: right; margin-bottom: 10px; }
+
+        /* Customer Info Cards */
+        .customer-info { display: flex; gap: 30px; margin-bottom: 40px; }
+        .info-card { flex: 1; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .info-card-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .info-card input, .info-card textarea { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 14px; color: #1e293b; padding: 4px; margin-bottom: 2px; resize: none; box-sizing: border-box; transition: 0.2s; }
+        .info-card input.bold-input { font-weight: 600; font-size: 16px; }
+        .info-card input:hover, .info-card textarea:hover, .info-card input:focus, .info-card textarea:focus { border-color: #cbd5e1; background: #fff; border-radius: 4px; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13px; table-layout: fixed; }
+        th { background: #0f172a; color: #ffffff; padding: 12px 10px; text-align: left; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid #0f172a; }
+        td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; }
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px; table-layout: fixed; }
-        th { background: #0056b3; color: white; padding: 8px; text-align: left; white-space: nowrap; }
-        td { padding: 8px; border-bottom: 1px solid #eee; word-wrap: break-word; }
-        input[type="number"], input[type="text"], select.item-select { width: 100%; padding: 5px; border: 1px dashed #ccc; box-sizing: border-box; }
-        .total-cell { font-weight: bold; }
+        td input, td select { width: 100%; border: 1px solid transparent; background: transparent; padding: 8px; box-sizing: border-box; font-family: inherit; font-size: 13px; color: #1e293b; transition: 0.2s; }
+        td input:hover, td select:hover, td input:focus, td select:focus { border-color: #cbd5e1; background: #f8fafc; border-radius: 4px; }
+        .total-cell { font-weight: 600; color: #0f172a; }
         
-        .totals-section { width: 40%; margin-left: auto; border-top: 2px solid #0056b3; padding-top: 10px; }
-        .totals-section div { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-        .totals-section .grand-total { font-size: 16px; font-weight: bold; color: #0056b3; border-top: 1px solid #ccc; padding-top: 10px; }
+        .section-title { font-size: 16px; font-weight: 600; color: #0f172a; margin: 40px 0 15px 0; display: flex; align-items: center; }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; margin-left: 15px; }
+
+        /* Totals Block */
+        .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 40px; }
+        .totals-section { width: 350px; background: #f8fafc; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .totals-section div { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: #475569; align-items: center; }
+        .totals-section input { width: 90px; text-align: right; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px; background: #fff; font-family: inherit; font-size: 14px; }
+        .grand-total { font-size: 18px !important; font-weight: 700; color: #0f172a !important; border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 5px; }
+
+        /* Terms & Bank Details Grid */
+        .terms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 30px; }
+        .terms-block h4 { margin: 0 0 15px 0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .terms-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 13px; color: #475569; }
+        .terms-row strong { width: 120px; color: #1e293b; font-weight: 600; }
+        .terms-row input { flex: 1; border: 1px solid transparent; background: transparent; padding: 6px; font-family: inherit; font-size: 13px; color: #1e293b; transition: 0.2s; }
+        .terms-row input:hover, .terms-row input:focus { border-color: #cbd5e1; background: #f8fafc; border-radius: 4px; }
         
-        .saas-section { margin-top: 20px; }
-        .saas-section h3 { color: #555; margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .bank-details { font-size: 12px; color: #475569; line-height: 1.8; }
+        .bank-details strong { color: #1e293b; font-weight: 600; }
+
+        /* Footer */
+        .footer { text-align: center; margin-top: 50px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; letter-spacing: 0.5px; }
         
-        .terms-section { margin-top: 20px; font-size: 11px; line-height: 1.5; color: #555; display: flex; justify-content: space-between; }
-        .terms-box { width: 48%; }
-        .terms-box input { border: 1px dashed #ccc; width: 100%; box-sizing: border-box; font-size: 11px; padding: 3px; }
+        .remove-btn { background: #ef4444 !important; color: white !important; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .remove-btn:hover { background: #dc2626 !important; }
         
-        .footer { text-align: center; margin-top: 30px; font-size: 10px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
-        .remove-btn { background: #dc3545 !important; padding: 5px 10px !important; font-size: 12px !important; border: none; color: white; border-radius: 3px; cursor: pointer; }
-        
+        /* Print/PDF rules */
         @media print {
-            .controls, .remove-btn { display: none !important; }
-            #quote-document { box-shadow: none; padding: 0; }
+            body { padding: 0; background: #fff; }
+            .controls, .remove-btn, .hide-print { display: none !important; }
+            #quote-document { box-shadow: none; padding: 20px; max-width: 100%; border: none; }
+            input, select, textarea { border: none !important; background: transparent !important; }
+            .info-card, .totals-section { border: 1px solid #e2e8f0; background: #f8fafc !important; -webkit-print-color-adjust: exact; }
+            th { background: #0f172a !important; color: white !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
 
 <div class="controls">
-    <button onclick="addHWItem()">+ Add Hardware</button>
-    <button onclick="addSaaSItem()">+ Add SaaS (Monthly)</button>
+    <button class="btn-primary" onclick="addHWItem()">+ Add Hardware</button>
+    <button class="btn-primary" onclick="addSaaSItem()">+ Add SaaS</button>
     <select id="currency-selector" onchange="updateCurrency()">
         <option value="USD">Currency: USD ($)</option>
         <option value="EUR">Currency: EUR (€)</option>
         <option value="ILS">Currency: ILS (₪)</option>
     </select>
-    <button onclick="generatePDF()" style="background: #28a745; margin-left: auto;">Export to PDF</button>
+    <button class="btn-success" onclick="generatePDF()">Export to PDF</button>
 </div>
 
 <div id="quote-document">
+    
     <div class="header">
         <div class="logo-area">
-            <img src="https://bennyot-cloud.github.io/t42-CPQ/logo.png" crossorigin="anonymous" alt="t42 Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <h1>t42</h1>
-            <div style="font-size: 14px; margin-top: 5px; font-weight: bold;">Sales Quotation</div>
+            <!-- הלוגו שלך -->
+            <img src="logo.png" alt="t42 Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <h1 style="display:none; color: #0f172a; margin:0; font-size:40px;">t42</h1>
         </div>
-        <div class="doc-info">
-            <div><strong>Date:</strong> <input type="date" id="quote-date"></div>
-            <div><strong>Quotation No:</strong> <input type="text" value="Q-202611001" style="width: 100px;"></div>
-            <div><strong>L.T. No.:</strong> 513608943</div>
-            <div><strong>Sales Rep:</strong> Benny Ohayon</div>
-            <div><strong>Email:</strong> bennyo@t42.co.uk</div>
+        <div class="doc-meta">
+            <div class="doc-title-main">Sales Quotation</div>
+            <strong>Date:</strong> <input type="date" id="quote-date">
+            <strong>Quotation No:</strong> <input type="text" value="Q-202611001">
+            <strong>L.T. No:</strong> <input type="text" value="513608943" readonly style="color: #64748b;">
+            <strong>Sales Rep:</strong> <input type="text" value="Benny Ohayon">
+            <strong>Email:</strong> <input type="text" value="bennyo@t42.co.uk">
         </div>
     </div>
 
     <div class="customer-info">
-        <div class="info-box">
-            <strong>Bill To:</strong><br>
-            <input type="text" placeholder="Company Name" style="font-weight: bold;"><br>
-            <input type="text" placeholder="Contact Person"><br>
+        <div class="info-card">
+            <div class="info-card-title">Bill To</div>
+            <input type="text" class="bold-input" placeholder="Company Name">
+            <input type="text" placeholder="Contact Person">
             <textarea placeholder="Full Billing Address" rows="2"></textarea>
         </div>
-        <div class="info-box">
-            <strong>Ship To:</strong><br>
-            <input type="text" placeholder="Same as Billing / Shipping Name" style="font-weight: bold;"><br>
-            <input type="text" placeholder="Shipping Email / Phone"><br>
+        <div class="info-card">
+            <div class="info-card-title">Ship To</div>
+            <input type="text" class="bold-input" placeholder="Same as Billing / Company Name">
+            <input type="text" placeholder="Shipping Email / Phone">
             <textarea placeholder="Full Shipping Address" rows="2"></textarea>
         </div>
     </div>
 
+    <!-- Hardware Table -->
     <table id="hw-table">
         <thead>
             <tr>
                 <th style="width: 8%;">Qty</th>
                 <th style="width: 22%;">Item No. (PN)</th>
                 <th style="width: 40%;">Description</th>
-                <th style="width: 15%;">Unit Price (<span class="cur-sym">$</span>)</th>
-                <th style="width: 15%;">Total (<span class="cur-sym">$</span>)</th>
+                <th style="width: 15%; text-align: right;">Unit Price (<span class="cur-sym">$</span>)</th>
+                <th style="width: 15%; text-align: right;">Total (<span class="cur-sym">$</span>)</th>
                 <th style="width: 5%;" class="hide-print"></th>
             </tr>
         </thead>
@@ -107,57 +147,74 @@
         </tbody>
     </table>
 
-    <div class="totals-section">
-        <div><span>Subtotal:</span> <span id="hw-subtotal">0.00</span></div>
-        <div><span>Discount (%):</span> <input type="number" id="discount-pct" value="0" style="width: 60px; text-align: right;" onchange="calculateTotals()"></div>
-        <div><span>Shipping Cost:</span> <input type="number" id="shipping-cost" value="0" style="width: 80px; text-align: right;" onchange="calculateTotals()"></div>
-        <div class="grand-total"><span>Total Due (HW):</span> <span id="hw-grand-total">0.00</span></div>
-    </div>
-
-    <div class="saas-section">
-        <h3>Software & SaaS (Monthly Recurring Services)</h3>
-        <table id="saas-table">
-            <thead>
-                <tr>
-                    <th style="width: 8%;">Qty</th>
-                    <th style="width: 22%;">Item No. (PN)</th>
-                    <th style="width: 40%;">Description</th>
-                    <th style="width: 15%;">Monthly Fee (<span class="cur-sym">$</span>)</th>
-                    <th style="width: 15%;">Total/Mo (<span class="cur-sym">$</span>)</th>
-                    <th style="width: 5%;" class="hide-print"></th>
-                </tr>
-            </thead>
-            <tbody id="saas-body">
-            </tbody>
-        </table>
-    </div>
-
-    <div class="terms-section">
-        <div class="terms-box">
-            <strong>Payment Terms:</strong><br>
-            HW Payment: <input type="text" value="Before Shipping - 50%, Net+30 days - 50%"><br>
-            SW Payment: <input type="text" value="NET +15"><br><br>
-            <strong>Shipping & Delivery:</strong><br>
-            Delivery Terms: <input type="text" value="Ex-Works"><br>
-            Delivery Date: <input type="text" value="TBD">
+    <!-- Totals Block for HW -->
+    <div class="totals-wrapper">
+        <div class="totals-section">
+            <div><span>Subtotal:</span> <span id="hw-subtotal" style="font-weight: 500; color: #1e293b;">0.00</span></div>
+            <div><span>Discount (%):</span> <input type="number" id="discount-pct" value="0" min="0" onchange="calculateTotals()"></div>
+            <div><span>Shipping Cost:</span> <input type="number" id="shipping-cost" value="0" min="0" onchange="calculateTotals()"></div>
+            <div class="grand-total"><span>Total Due (HW):</span> <span id="hw-grand-total">0.00</span></div>
         </div>
-        <div class="terms-box">
-            <strong>Bank Details:</strong><br>
-            POALIM BANK LTD<br>
-            ACCOUNT NUMBER: 124635<br>
-            BANK BRANCH: HAGALIM<br>
-            BIC CODE: POALILIT<br>
-            IBAN: IL03-0125-8400-0000-0124-635<br>
-            BANK ADDRESS: SDEROT ABBA EVEN 5, HERZLIYA
+    </div>
+
+    <!-- SaaS Section -->
+    <div class="section-title">Software & SaaS (Monthly Recurring)</div>
+    <table id="saas-table">
+        <thead>
+            <tr>
+                <th style="width: 8%;">Qty</th>
+                <th style="width: 22%;">Item No. (PN)</th>
+                <th style="width: 40%;">Description</th>
+                <th style="width: 15%; text-align: right;">Monthly Fee (<span class="cur-sym">$</span>)</th>
+                <th style="width: 15%; text-align: right;">Total/Mo (<span class="cur-sym">$</span>)</th>
+                <th style="width: 5%;" class="hide-print"></th>
+            </tr>
+        </thead>
+        <tbody id="saas-body">
+        </tbody>
+    </table>
+
+    <div class="terms-grid">
+        <div class="terms-block">
+            <h4>Commercial Terms</h4>
+            <div class="terms-row">
+                <strong>HW Payment:</strong> 
+                <input type="text" value="Before Shipping - 50%, Net+30 - 50%">
+            </div>
+            <div class="terms-row">
+                <strong>SW Payment:</strong> 
+                <input type="text" value="NET +15">
+            </div>
+            <div class="terms-row">
+                <strong>Delivery Terms:</strong> 
+                <input type="text" value="Ex-Works">
+            </div>
+            <div class="terms-row">
+                <strong>Delivery Date:</strong> 
+                <input type="text" value="TBD">
+            </div>
+        </div>
+        
+        <div class="terms-block">
+            <h4>Bank Details</h4>
+            <div class="bank-details">
+                <strong>POALIM BANK LTD</strong><br>
+                ACCOUNT NUMBER: 124635<br>
+                BANK BRANCH: HAGALIM<br>
+                BIC CODE: POALILIT<br>
+                IBAN: IL03-0125-8400-0000-0124-635<br>
+                BANK ADDRESS: SDEROT ABBA EVEN 5, HERZLIYA
+            </div>
         </div>
     </div>
 
     <div class="footer">
-        Ramatayim Road 96, Hod HaSharon 4532532, Israel | Phone: +972-3-6199901 | Fax: +972-3-6199954 | www.t42.co.uk
+        Ramatayim Road 96, Hod HaSharon 4532532, Israel &nbsp;|&nbsp; Phone: +972-3-6199901 &nbsp;|&nbsp; Fax: +972-3-6199954 &nbsp;|&nbsp; www.t42.co.uk
     </div>
 </div>
 
 <script>
+    // Products Database
     const hwProducts = [
         { pn: "", desc: "-- Custom / Manual --", price: 0 },
         { pn: "AMP20908", desc: "Lokies 4G3G /USB C", price: 210 },
@@ -177,6 +234,7 @@
 
     let currentCurrency = "$";
 
+    // Set today's date
     document.getElementById('quote-date').valueAsDate = new Date();
 
     function updateCurrency() {
@@ -199,20 +257,15 @@
                     </select>
                 </td>
                 <td><input type="text" class="desc-input"></td>
-                <td><input type="number" class="price-input" onchange="calculateTotals()" step="0.01"></td>
-                <td class="total-cell">0.00</td>
+                <td><input type="number" class="price-input" onchange="calculateTotals()" step="0.01" style="text-align: right;"></td>
+                <td class="total-cell" style="text-align: right;">0.00</td>
                 <td class="hide-print"><button class="remove-btn" onclick="this.closest('tr').remove(); calculateTotals();">X</button></td>
             </tr>
         `;
     }
 
-    function addHWItem() {
-        document.getElementById('hw-body').insertAdjacentHTML('beforeend', generateRowHTML(false));
-    }
-
-    function addSaaSItem() {
-        document.getElementById('saas-body').insertAdjacentHTML('beforeend', generateRowHTML(true));
-    }
+    function addHWItem() { document.getElementById('hw-body').insertAdjacentHTML('beforeend', generateRowHTML(false)); }
+    function addSaaSItem() { document.getElementById('saas-body').insertAdjacentHTML('beforeend', generateRowHTML(true)); }
 
     function updateRowData(selectEl) {
         const selected = selectEl.options[selectEl.selectedIndex];
@@ -222,77 +275,11 @@
         calculateTotals();
     }
 
+    function formatNumber(num) {
+        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     function calculateTotals() {
         let hwSub = 0;
         document.querySelectorAll('#hw-body tr').forEach(tr => {
-            const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
-            const price = parseFloat(tr.querySelector('.price-input').value) || 0;
-            const total = qty * price;
-            tr.querySelector('.total-cell').innerText = total.toFixed(2);
-            hwSub += total;
-        });
-        
-        document.getElementById('hw-subtotal').innerText = hwSub.toFixed(2);
-        
-        const discPct = parseFloat(document.getElementById('discount-pct').value) || 0;
-        const discountAmt = hwSub * (discPct / 100);
-        const shipping = parseFloat(document.getElementById('shipping-cost').value) || 0;
-        
-        const hwGrand = (hwSub - discountAmt) + shipping;
-        document.getElementById('hw-grand-total').innerText = currentCurrency + " " + hwGrand.toFixed(2);
-
-        document.querySelectorAll('#saas-body tr').forEach(tr => {
-            const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
-            const price = parseFloat(tr.querySelector('.price-input').value) || 0;
-            const total = qty * price;
-            tr.querySelector('.total-cell').innerText = total.toFixed(2);
-        });
-    }
-
-    function generatePDF() {
-        const printHidden = document.querySelectorAll('.hide-print, .controls');
-        printHidden.forEach(el => el.style.display = 'none');
-        
-        // המרה זמנית של שדות לטקסט רגיל כדי למנוע חיתוך ב-PDF
-        const inputs = document.querySelectorAll('#quote-document input, #quote-document select, #quote-document textarea');
-        inputs.forEach(el => {
-            const span = document.createElement('span');
-            span.className = 'temp-pdf-text';
-            span.style.fontSize = window.getComputedStyle(el).fontSize;
-            span.style.fontWeight = window.getComputedStyle(el).fontWeight;
-            span.style.display = 'inline-block';
-            span.style.width = '100%';
-            
-            if (el.tagName === 'SELECT') {
-                span.innerText = el.options[el.selectedIndex].text;
-            } else if (el.tagName === 'TEXTAREA') {
-                span.innerHTML = el.value.replace(/\\n/g, '<br>');
-            } else {
-                span.innerText = el.value;
-            }
-            
-            el.style.display = 'none';
-            el.parentNode.insertBefore(span, el);
-        });
-
-        const element = document.getElementById('quote-document');
-        const opt = {
-            margin:       [0.2, 0.2, 0.2, 0.2],
-            filename:     't42_Quotation.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            // החזרה למצב עריכה לאחר הפקת המסמך
-            printHidden.forEach(el => el.style.display = '');
-            document.querySelectorAll('.temp-pdf-text').forEach(el => el.remove());
-            inputs.forEach(el => el.style.display = '');
-        });
-    }
-
-    addHWItem();
-</script>
-</body>
-</html>
+            const qty = parseFloat(tr.querySelector('.qty-input
