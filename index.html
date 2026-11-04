@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>t42 CPQ System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
+        .controls { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .controls button, .controls select { padding: 10px 15px; border: 1px solid #ccc; border-radius: 4px; background: #0056b3; color: white; cursor: pointer; font-size: 14px; }
+        .controls select { background: #fff; color: #333; }
+        .controls button:hover { background: #004494; }
+        
+        #quote-document { background: #fff; padding: 40px; border-radius: 2px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto; position: relative; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0056b3; padding-bottom: 20px; margin-bottom: 20px; }
+        .logo-area h1 { margin: 0; color: #0056b3; font-size: 42px; font-weight: bold; }
+        .doc-info { text-align: right; font-size: 14px; line-height: 1.6; }
+        
+        .customer-info { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .info-box { width: 48%; }
+        .info-box input, .info-box textarea { width: 100%; border: 1px dashed #ccc; padding: 5px; margin-top: 5px; font-family: inherit; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+        th { background: #0056b3; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        input[type="number"], input[type="text"], select.item-select { width: 90%; padding: 5px; border: 1px dashed #ccc; }
+        .total-cell { font-weight: bold; }
+        
+        .totals-section { width: 40%; margin-left: auto; border-top: 2px solid #0056b3; padding-top: 10px; }
+        .totals-section div { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .totals-section .grand-total { font-size: 18px; font-weight: bold; color: #0056b3; border-top: 1px solid #ccc; padding-top: 10px; }
+        
+        .saas-section { margin-top: 40px; }
+        .saas-section h3 { color: #555; margin-bottom: 10px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .terms-section { margin-top: 40px; font-size: 12px; line-height: 1.5; color: #555; display: flex; justify-content: space-between; }
+        .terms-box { width: 48%; }
+        .terms-box input { border: 1px dashed #ccc; width: 150px; font-size: 12px; }
+        
+        .footer { text-align: center; margin-top: 50px; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
+        .remove-btn { background: #dc3545 !important; padding: 5px 10px !important; font-size: 12px !important; }
+        
+        @media print {
+            .controls, .remove-btn { display: none !important; }
+            input, select, textarea { border: none !important; appearance: none; background: transparent; resize: none; }
+            #quote-document { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <button onclick="addHWItem()">+ Add Hardware</button>
+    <button onclick="addSaaSItem()">+ Add SaaS (Monthly)</button>
+    <select id="currency-selector" onchange="updateCurrency()">
+        <option value="USD">Currency: USD ($)</option>
+        <option value="EUR">Currency: EUR (€)</option>
+        <option value="ILS">Currency: ILS (₪)</option>
+    </select>
+    <button onclick="generatePDF()" style="background: #28a745; margin-left: auto;">Export to PDF</button>
+</div>
+
+<div id="quote-document">
+    <div class="header">
+        <div class="logo-area">
+            <h1>t42</h1>
+            <div style="font-size: 14px; margin-top: 5px; font-weight: bold;">Sales Quotation</div>
+        </div>
+        <div class="doc-info">
+            <div><strong>Date:</strong> <input type="date" id="quote-date"></div>
+            <div><strong>Quotation No:</strong> <input type="text" value="Q-202611001" style="width: 100px;"></div>
+            <div><strong>L.T. No.:</strong> 513608943</div>
+            <div><strong>Sales Rep:</strong> Benny Ohayon</div>
+            <div><strong>Email:</strong> bennyo@t42.co.uk</div>
+        </div>
+    </div>
+
+    <div class="customer-info">
+        <div class="info-box">
+            <strong>Bill To:</strong><br>
+            <input type="text" placeholder="Company Name" style="font-weight: bold;"><br>
+            <input type="text" placeholder="Contact Person"><br>
+            <textarea placeholder="Full Billing Address" rows="3"></textarea>
+        </div>
+        <div class="info-box">
+            <strong>Ship To:</strong><br>
+            <input type="text" placeholder="Same as Billing / Shipping Name" style="font-weight: bold;"><br>
+            <input type="text" placeholder="Shipping Email / Phone"><br>
+            <textarea placeholder="Full Shipping Address" rows="3"></textarea>
+        </div>
+    </div>
+
+    <!-- Hardware Table -->
+    <table id="hw-table">
+        <thead>
+            <tr>
+                <th style="width: 10%;">Qty</th>
+                <th style="width: 20%;">Item No. (PN)</th>
+                <th style="width: 35%;">Description</th>
+                <th style="width: 15%;">Unit Price (<span class="cur-sym">$</span>)</th>
+                <th style="width: 15%;">Total (<span class="cur-sym">$</span>)</th>
+                <th style="width: 5%;" class="hide-print"></th>
+            </tr>
+        </thead>
+        <tbody id="hw-body">
+            <!-- HW Items inserted here -->
+        </tbody>
+    </table>
+
+    <div class="totals-section">
+        <div><span>Subtotal:</span> <span id="hw-subtotal">0.00</span></div>
+        <div><span>Discount (%):</span> <input type="number" id="discount-pct" value="0" style="width: 60px; text-align: right;" onchange="calculateTotals()"></div>
+        <div><span>Shipping Cost:</span> <input type="number" id="shipping-cost" value="0" style="width: 80px; text-align: right;" onchange="calculateTotals()"></div>
+        <div class="grand-total"><span>Total Due (HW):</span> <span id="hw-grand-total">0.00</span></div>
+    </div>
+
+    <!-- SaaS Table -->
+    <div class="saas-section">
+        <h3>Software & SaaS (Monthly Recurring Services)</h3>
+        <table id="saas-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Qty</th>
+                    <th style="width: 20%;">Item No. (PN)</th>
+                    <th style="width: 35%;">Description</th>
+                    <th style="width: 15%;">Monthly Fee (<span class="cur-sym">$</span>)</th>
+                    <th style="width: 15%;">Total/Mo (<span class="cur-sym">$</span>)</th>
+                    <th style="width: 5%;" class="hide-print"></th>
+                </tr>
+            </thead>
+            <tbody id="saas-body">
+                <!-- SaaS Items inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="terms-section">
+        <div class="terms-box">
+            <strong>Payment Terms:</strong><br>
+            HW Payment: <input type="text" value="Before Shipping - 50%, Net+30 - 50%"><br>
+            SW Payment: <input type="text" value="NET + 15"><br><br>
+            <strong>Shipping & Delivery:</strong><br>
+            Delivery Terms: <input type="text" value="Ex-Works"><br>
+            Delivery Date: <input type="text" value="TBD">
+        </div>
+        <div class="terms-box">
+            <strong>Bank Details:</strong><br>
+            POALIM BANK LTD<br>
+            ACCOUNT NUMBER: 124635<br>
+            BANK BRANCH: HAGALIM<br>
+            BIC CODE: POALILIT<br>
+            IBAN: IL03-0125-8400-0000-0124-635<br>
+            BANK ADDRESS: SDEROT ABBA EVEN 5, HERZLIYA
+        </div>
+    </div>
+
+    <div class="footer">
+        Ramatayim Road 96, Hod HaSharon 4532532, Israel | Phone: 972 3 6199901 | Fax: 972 3 6199954 | www.t42.co.uk
+    </div>
+</div>
+
+<script>
+    // Database from uploaded pricing image
+    const hwProducts = [
+        { pn: "", desc: "-- Custom / Manual --", price: 0 },
+        { pn: "AMP20908", desc: "Lokies 4G3G /USB C", price: 210 },
+        { pn: "AMP20909", desc: "Lokies- NO SHACKEL -Quectel", price: 193 },
+        { pn: "AMP2226", desc: "M Rechargeable (Kylos)", price: 75 },
+        { pn: "AMP21053", desc: "Helios M 4G EU with 1m cable", price: 70 },
+        { pn: "ASS52105L_4G_CAT1", desc: "Tetis 1 Long V2 4G Cat-1 NO BATTERY", price: 257 },
+        { pn: "ASS10368", desc: "Standard Shackle", price: 17 }
+    ];
+
+    const saasProducts = [
+        { pn: "", desc: "-- Custom / Manual --", price: 0 },
+        { pn: "amp10217", desc: "Lokies - Web application usage during", price: 3 },
+        { pn: "AMP10214", desc: "Tetis - Web application usage during", price: 6 },
+        { pn: "AMP10205", desc: "Helios TT - Web application usage during", price: 1.5 }
+    ];
+
+    let currentCurrency = "$";
+
+    document.getElementById('quote-date').valueAsDate = new Date();
+
+    function updateCurrency() {
+        const sel = document.getElementById('currency-selector').value;
+        currentCurrency = sel === 'EUR' ? '€' : (sel === 'ILS' ? '₪' : '$');
+        document.querySelectorAll('.cur-sym').forEach(el => el.innerText = currentCurrency);
+        calculateTotals();
+    }
+
+    function generateRowHTML(isSaaS) {
+        const products = isSaaS ? saasProducts : hwProducts;
+        let options = products.map(p => `<option value="${p.pn}" data-desc="${p.desc}" data-price="${p.price}">${p.pn} - ${p.desc}</option>`).join('');
+        
+        return `
+            <tr>
+                <td><input type="number" value="1" min="1" onchange="calculateTotals()" class="qty-input"></td>
+                <td>
+                    <select class="item-select" onchange="updateRowData(this)">
+                        ${options}
+                    </select>
+                </td>
+                <td><input type="text" class="desc-input"></td>
+                <td><input type="number" class="price-input" onchange="calculateTotals()" step="0.01"></td>
+                <td class="total-cell">0.00</td>
+                <td class="hide-print"><button class="remove-btn" onclick="this.closest('tr').remove(); calculateTotals();">X</button></td>
+            </tr>
+        `;
+    }
+
+    function addHWItem() {
+        document.getElementById('hw-body').insertAdjacentHTML('beforeend', generateRowHTML(false));
+    }
+
+    function addSaaSItem() {
+        document.getElementById('saas-body').insertAdjacentHTML('beforeend', generateRowHTML(true));
+    }
+
+    function updateRowData(selectEl) {
+        const selected = selectEl.options[selectEl.selectedIndex];
+        const tr = selectEl.closest('tr');
+        tr.querySelector('.desc-input').value = selected.getAttribute('data-desc');
+        tr.querySelector('.price-input').value = selected.getAttribute('data-price');
+        calculateTotals();
+    }
+
+    function calculateTotals() {
+        // HW Calc
+        let hwSub = 0;
+        document.querySelectorAll('#hw-body tr').forEach(tr => {
+            const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
+            const price = parseFloat(tr.querySelector('.price-input').value) || 0;
+            const total = qty * price;
+            tr.querySelector('.total-cell').innerText = total.toFixed(2);
+            hwSub += total;
+        });
+        
+        document.getElementById('hw-subtotal').innerText = hwSub.toFixed(2);
+        
+        const discPct = parseFloat(document.getElementById('discount-pct').value) || 0;
+        const discountAmt = hwSub * (discPct / 100);
+        const shipping = parseFloat(document.getElementById('shipping-cost').value) || 0;
+        
+        const hwGrand = (hwSub - discountAmt) + shipping;
+        document.getElementById('hw-grand-total').innerText = currentCurrency + " " + hwGrand.toFixed(2);
+
+        // SaaS Calc
+        document.querySelectorAll('#saas-body tr').forEach(tr => {
+            const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
+            const price = parseFloat(tr.querySelector('.price-input').value) || 0;
+            const total = qty * price;
+            tr.querySelector('.total-cell').innerText = total.toFixed(2);
+        });
+    }
+
+    function generatePDF() {
+        // Hide UI elements temporarily
+        const printHidden = document.querySelectorAll('.hide-print, .controls');
+        printHidden.forEach(el => el.style.display = 'none');
+        
+        // Convert inputs to plain text for cleaner PDF rendering
+        const element = document.getElementById('quote-document');
+        const opt = {
+            margin:       0.5,
+            filename:     't42_Quotation.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Restore UI
+            printHidden.forEach(el => el.style.display = '');
+        });
+    }
+
+    // Init with one blank HW row
+    addHWItem();
+</script>
+</body>
+</html>
