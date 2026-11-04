@@ -12,9 +12,9 @@
         .controls select { background: #fff; color: #333; }
         .controls button:hover { background: #004494; }
         
-        #quote-document { background: #fff; padding: 20px 40px; border-radius: 2px; max-width: 900px; margin: 0 auto; position: relative; box-sizing: border-box; }
+        #quote-document { background: #fff; padding: 30px 40px; border-radius: 2px; max-width: 900px; margin: 0 auto; position: relative; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0056b3; padding-bottom: 15px; margin-bottom: 15px; }
-        .logo-area img { max-height: 65px; object-fit: contain; }
+        .logo-area img { max-height: 70px; object-fit: contain; }
         .logo-area h1 { margin: 0; color: #0056b3; font-size: 42px; font-weight: bold; display: none; }
         .doc-info { text-align: right; font-size: 14px; line-height: 1.6; }
         
@@ -22,10 +22,10 @@
         .info-box { width: 48%; }
         .info-box input, .info-box textarea { width: 100%; border: 1px dashed #ccc; padding: 5px; margin-top: 5px; font-family: inherit; box-sizing: border-box; }
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px; }
-        th { background: #0056b3; color: white; padding: 8px; text-align: left; }
-        td { padding: 8px; border-bottom: 1px solid #eee; }
-        input[type="number"], input[type="text"], select.item-select { width: 95%; padding: 5px; border: 1px dashed #ccc; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px; table-layout: fixed; }
+        th { background: #0056b3; color: white; padding: 8px; text-align: left; white-space: nowrap; }
+        td { padding: 8px; border-bottom: 1px solid #eee; word-wrap: break-word; }
+        input[type="number"], input[type="text"], select.item-select { width: 100%; padding: 5px; border: 1px dashed #ccc; box-sizing: border-box; }
         .total-cell { font-weight: bold; }
         
         .totals-section { width: 40%; margin-left: auto; border-top: 2px solid #0056b3; padding-top: 10px; }
@@ -44,7 +44,6 @@
         
         @media print {
             .controls, .remove-btn { display: none !important; }
-            input, select, textarea { border: none !important; appearance: none; background: transparent; resize: none; }
             #quote-document { box-shadow: none; padding: 0; }
         }
     </style>
@@ -65,7 +64,7 @@
 <div id="quote-document">
     <div class="header">
         <div class="logo-area">
-            <img src="logo.png" alt="t42 Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <img src="https://bennyot-cloud.github.io/t42-CPQ/logo.png" crossorigin="anonymous" alt="t42 Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <h1>t42</h1>
             <div style="font-size: 14px; margin-top: 5px; font-weight: bold;">Sales Quotation</div>
         </div>
@@ -97,7 +96,7 @@
         <thead>
             <tr>
                 <th style="width: 8%;">Qty</th>
-                <th style="width: 17%;">Item No. (PN)</th>
+                <th style="width: 22%;">Item No. (PN)</th>
                 <th style="width: 40%;">Description</th>
                 <th style="width: 15%;">Unit Price (<span class="cur-sym">$</span>)</th>
                 <th style="width: 15%;">Total (<span class="cur-sym">$</span>)</th>
@@ -121,7 +120,7 @@
             <thead>
                 <tr>
                     <th style="width: 8%;">Qty</th>
-                    <th style="width: 17%;">Item No. (PN)</th>
+                    <th style="width: 22%;">Item No. (PN)</th>
                     <th style="width: 40%;">Description</th>
                     <th style="width: 15%;">Monthly Fee (<span class="cur-sym">$</span>)</th>
                     <th style="width: 15%;">Total/Mo (<span class="cur-sym">$</span>)</th>
@@ -254,17 +253,42 @@
         const printHidden = document.querySelectorAll('.hide-print, .controls');
         printHidden.forEach(el => el.style.display = 'none');
         
+        // המרה זמנית של שדות לטקסט רגיל כדי למנוע חיתוך ב-PDF
+        const inputs = document.querySelectorAll('#quote-document input, #quote-document select, #quote-document textarea');
+        inputs.forEach(el => {
+            const span = document.createElement('span');
+            span.className = 'temp-pdf-text';
+            span.style.fontSize = window.getComputedStyle(el).fontSize;
+            span.style.fontWeight = window.getComputedStyle(el).fontWeight;
+            span.style.display = 'inline-block';
+            span.style.width = '100%';
+            
+            if (el.tagName === 'SELECT') {
+                span.innerText = el.options[el.selectedIndex].text;
+            } else if (el.tagName === 'TEXTAREA') {
+                span.innerHTML = el.value.replace(/\\n/g, '<br>');
+            } else {
+                span.innerText = el.value;
+            }
+            
+            el.style.display = 'none';
+            el.parentNode.insertBefore(span, el);
+        });
+
         const element = document.getElementById('quote-document');
         const opt = {
             margin:       [0.2, 0.2, 0.2, 0.2],
             filename:     't42_Quotation.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
+            html2canvas:  { scale: 2, useCORS: true },
             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
         html2pdf().set(opt).from(element).save().then(() => {
+            // החזרה למצב עריכה לאחר הפקת המסמך
             printHidden.forEach(el => el.style.display = '');
+            document.querySelectorAll('.temp-pdf-text').forEach(el => el.remove());
+            inputs.forEach(el => el.style.display = '');
         });
     }
 
