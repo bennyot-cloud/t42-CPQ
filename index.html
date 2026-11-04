@@ -12,34 +12,35 @@
         .controls select { background: #fff; color: #333; }
         .controls button:hover { background: #004494; }
         
-        #quote-document { background: #fff; padding: 40px; border-radius: 2px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto; position: relative; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0056b3; padding-bottom: 20px; margin-bottom: 20px; }
-        .logo-area h1 { margin: 0; color: #0056b3; font-size: 42px; font-weight: bold; }
+        #quote-document { background: #fff; padding: 20px 40px; border-radius: 2px; max-width: 900px; margin: 0 auto; position: relative; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0056b3; padding-bottom: 15px; margin-bottom: 15px; }
+        .logo-area img { max-height: 65px; object-fit: contain; }
+        .logo-area h1 { margin: 0; color: #0056b3; font-size: 42px; font-weight: bold; display: none; }
         .doc-info { text-align: right; font-size: 14px; line-height: 1.6; }
         
-        .customer-info { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .customer-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
         .info-box { width: 48%; }
-        .info-box input, .info-box textarea { width: 100%; border: 1px dashed #ccc; padding: 5px; margin-top: 5px; font-family: inherit; }
+        .info-box input, .info-box textarea { width: 100%; border: 1px dashed #ccc; padding: 5px; margin-top: 5px; font-family: inherit; box-sizing: border-box; }
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
-        th { background: #0056b3; color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        input[type="number"], input[type="text"], select.item-select { width: 90%; padding: 5px; border: 1px dashed #ccc; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 13px; }
+        th { background: #0056b3; color: white; padding: 8px; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        input[type="number"], input[type="text"], select.item-select { width: 95%; padding: 5px; border: 1px dashed #ccc; box-sizing: border-box; }
         .total-cell { font-weight: bold; }
         
         .totals-section { width: 40%; margin-left: auto; border-top: 2px solid #0056b3; padding-top: 10px; }
         .totals-section div { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-        .totals-section .grand-total { font-size: 18px; font-weight: bold; color: #0056b3; border-top: 1px solid #ccc; padding-top: 10px; }
+        .totals-section .grand-total { font-size: 16px; font-weight: bold; color: #0056b3; border-top: 1px solid #ccc; padding-top: 10px; }
         
-        .saas-section { margin-top: 40px; }
-        .saas-section h3 { color: #555; margin-bottom: 10px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .saas-section { margin-top: 20px; }
+        .saas-section h3 { color: #555; margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         
-        .terms-section { margin-top: 40px; font-size: 12px; line-height: 1.5; color: #555; display: flex; justify-content: space-between; }
+        .terms-section { margin-top: 20px; font-size: 11px; line-height: 1.5; color: #555; display: flex; justify-content: space-between; }
         .terms-box { width: 48%; }
-        .terms-box input { border: 1px dashed #ccc; width: 150px; font-size: 12px; }
+        .terms-box input { border: 1px dashed #ccc; width: 100%; box-sizing: border-box; font-size: 11px; padding: 3px; }
         
-        .footer { text-align: center; margin-top: 50px; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 15px; }
-        .remove-btn { background: #dc3545 !important; padding: 5px 10px !important; font-size: 12px !important; }
+        .footer { text-align: center; margin-top: 30px; font-size: 10px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
+        .remove-btn { background: #dc3545 !important; padding: 5px 10px !important; font-size: 12px !important; border: none; color: white; border-radius: 3px; cursor: pointer; }
         
         @media print {
             .controls, .remove-btn { display: none !important; }
@@ -64,6 +65,7 @@
 <div id="quote-document">
     <div class="header">
         <div class="logo-area">
+            <img src="logo.png" alt="t42 Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <h1>t42</h1>
             <div style="font-size: 14px; margin-top: 5px; font-weight: bold;">Sales Quotation</div>
         </div>
@@ -81,30 +83,28 @@
             <strong>Bill To:</strong><br>
             <input type="text" placeholder="Company Name" style="font-weight: bold;"><br>
             <input type="text" placeholder="Contact Person"><br>
-            <textarea placeholder="Full Billing Address" rows="3"></textarea>
+            <textarea placeholder="Full Billing Address" rows="2"></textarea>
         </div>
         <div class="info-box">
             <strong>Ship To:</strong><br>
             <input type="text" placeholder="Same as Billing / Shipping Name" style="font-weight: bold;"><br>
             <input type="text" placeholder="Shipping Email / Phone"><br>
-            <textarea placeholder="Full Shipping Address" rows="3"></textarea>
+            <textarea placeholder="Full Shipping Address" rows="2"></textarea>
         </div>
     </div>
 
-    <!-- Hardware Table -->
     <table id="hw-table">
         <thead>
             <tr>
-                <th style="width: 10%;">Qty</th>
-                <th style="width: 20%;">Item No. (PN)</th>
-                <th style="width: 35%;">Description</th>
+                <th style="width: 8%;">Qty</th>
+                <th style="width: 17%;">Item No. (PN)</th>
+                <th style="width: 40%;">Description</th>
                 <th style="width: 15%;">Unit Price (<span class="cur-sym">$</span>)</th>
                 <th style="width: 15%;">Total (<span class="cur-sym">$</span>)</th>
                 <th style="width: 5%;" class="hide-print"></th>
             </tr>
         </thead>
         <tbody id="hw-body">
-            <!-- HW Items inserted here -->
         </tbody>
     </table>
 
@@ -115,22 +115,20 @@
         <div class="grand-total"><span>Total Due (HW):</span> <span id="hw-grand-total">0.00</span></div>
     </div>
 
-    <!-- SaaS Table -->
     <div class="saas-section">
         <h3>Software & SaaS (Monthly Recurring Services)</h3>
         <table id="saas-table">
             <thead>
                 <tr>
-                    <th style="width: 10%;">Qty</th>
-                    <th style="width: 20%;">Item No. (PN)</th>
-                    <th style="width: 35%;">Description</th>
+                    <th style="width: 8%;">Qty</th>
+                    <th style="width: 17%;">Item No. (PN)</th>
+                    <th style="width: 40%;">Description</th>
                     <th style="width: 15%;">Monthly Fee (<span class="cur-sym">$</span>)</th>
                     <th style="width: 15%;">Total/Mo (<span class="cur-sym">$</span>)</th>
                     <th style="width: 5%;" class="hide-print"></th>
                 </tr>
             </thead>
             <tbody id="saas-body">
-                <!-- SaaS Items inserted here -->
             </tbody>
         </table>
     </div>
@@ -138,8 +136,8 @@
     <div class="terms-section">
         <div class="terms-box">
             <strong>Payment Terms:</strong><br>
-            HW Payment: <input type="text" value="Before Shipping - 50%, Net+30 - 50%"><br>
-            SW Payment: <input type="text" value="NET + 15"><br><br>
+            HW Payment: <input type="text" value="Before Shipping - 50%, Net+30 days - 50%"><br>
+            SW Payment: <input type="text" value="NET +15"><br><br>
             <strong>Shipping & Delivery:</strong><br>
             Delivery Terms: <input type="text" value="Ex-Works"><br>
             Delivery Date: <input type="text" value="TBD">
@@ -156,12 +154,11 @@
     </div>
 
     <div class="footer">
-        Ramatayim Road 96, Hod HaSharon 4532532, Israel | Phone: 972 3 6199901 | Fax: 972 3 6199954 | www.t42.co.uk
+        Ramatayim Road 96, Hod HaSharon 4532532, Israel | Phone: +972-3-6199901 | Fax: +972-3-6199954 | www.t42.co.uk
     </div>
 </div>
 
 <script>
-    // Database from uploaded pricing image
     const hwProducts = [
         { pn: "", desc: "-- Custom / Manual --", price: 0 },
         { pn: "AMP20908", desc: "Lokies 4G3G /USB C", price: 210 },
@@ -227,7 +224,6 @@
     }
 
     function calculateTotals() {
-        // HW Calc
         let hwSub = 0;
         document.querySelectorAll('#hw-body tr').forEach(tr => {
             const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
@@ -246,7 +242,6 @@
         const hwGrand = (hwSub - discountAmt) + shipping;
         document.getElementById('hw-grand-total').innerText = currentCurrency + " " + hwGrand.toFixed(2);
 
-        // SaaS Calc
         document.querySelectorAll('#saas-body tr').forEach(tr => {
             const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
             const price = parseFloat(tr.querySelector('.price-input').value) || 0;
@@ -256,14 +251,12 @@
     }
 
     function generatePDF() {
-        // Hide UI elements temporarily
         const printHidden = document.querySelectorAll('.hide-print, .controls');
         printHidden.forEach(el => el.style.display = 'none');
         
-        // Convert inputs to plain text for cleaner PDF rendering
         const element = document.getElementById('quote-document');
         const opt = {
-            margin:       0.5,
+            margin:       [0.2, 0.2, 0.2, 0.2],
             filename:     't42_Quotation.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
@@ -271,12 +264,10 @@
         };
 
         html2pdf().set(opt).from(element).save().then(() => {
-            // Restore UI
             printHidden.forEach(el => el.style.display = '');
         });
     }
 
-    // Init with one blank HW row
     addHWItem();
 </script>
 </body>
