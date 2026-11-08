@@ -1,336 +1,159 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>t42 Enterprise CPQ</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <title>t42 CPQ Generator</title>
     <style>
-        body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background: #eef2f5; color: #1e293b; margin: 0; padding: 10px; }
-        
-        .controls { background: #fff; padding: 12px 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; gap: 15px; align-items: center; flex-wrap: wrap; max-width: 900px; margin-left: auto; margin-right: auto; box-sizing: border-box; border: 1px solid #e2e8f0; }
-        .controls button, .controls select { padding: 8px 15px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #334155; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .controls button:hover, .controls select:hover { border-color: #94a3b8; background: #f8fafc; }
-        .controls .btn-primary { background: #0f172a; color: white; border: none; }
-        .controls .btn-primary:hover { background: #1e293b; }
-        .controls .btn-success { background: #059669; color: white; border: none; margin-left: auto; }
-        .controls .btn-success:hover { background: #047857; }
-
-        #quote-document { background: #fff; padding: 25px 35px; border-radius: 4px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto; box-sizing: border-box; position: relative; }
-        
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
-        .logo-area { width: 200px; }
-        .logo-area img { max-width: 100%; max-height: 60px; object-fit: contain; }
-        
-        .doc-meta { display: grid; grid-template-columns: 90px 140px; gap: 4px 12px; font-size: 11px; color: #475569; align-items: center; justify-content: end; }
-        .doc-meta strong { color: #0f172a; font-weight: 600; text-align: right; }
-        .doc-meta input { border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 11px; color: #0f172a; padding: 2px; width: 100%; box-sizing: border-box; }
-        .doc-meta input:hover, .doc-meta input:focus { border-color: #cbd5e1; background: #f8fafc; border-radius: 4px; }
-        .doc-title-main { font-size: 18px; font-weight: 300; color: #64748b; text-transform: uppercase; letter-spacing: 1px; grid-column: span 2; text-align: right; margin-bottom: 4px; }
-
-        .customer-info { display: flex; gap: 15px; margin-bottom: 15px; }
-        .info-card { flex: 1; background: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .info-card-title { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-        .info-card input, .info-card textarea { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 12px; color: #1e293b; padding: 2px; margin-bottom: 0; resize: none; box-sizing: border-box; display: block; }
-        .info-card input.bold-input { font-weight: 600; font-size: 13px; }
-        .info-card input:hover, .info-card textarea:hover, .info-card input:focus, .info-card textarea:focus { border-color: #cbd5e1; background: #fff; border-radius: 4px; }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11px; table-layout: fixed; }
-        th { background: #0f172a; color: #ffffff; padding: 6px; text-align: left; font-weight: 500; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid #0f172a; }
-        td { padding: 4px 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; word-break: break-word; }
-        
-        td input, td select { width: 100%; border: 1px solid transparent; background: transparent; padding: 2px; box-sizing: border-box; font-family: inherit; font-size: 11px; color: #1e293b; }
-        td input:hover, td select:hover, td input:focus, td select:focus { border-color: #cbd5e1; background: #f8fafc; border-radius: 4px; }
-        .total-cell { font-weight: 600; color: #0f172a; }
-        
-        .section-title { font-size: 12px; font-weight: 600; color: #0f172a; margin: 12px 0 6px 0; display: flex; align-items: center; }
-        .section-title::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; margin-left: 10px; }
-
-        .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-        .totals-section { width: 280px; background: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .totals-section div { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; color: #475569; align-items: center; }
-        .totals-section input { width: 70px; text-align: right; border: 1px solid #cbd5e1; padding: 2px 4px; border-radius: 4px; background: #fff; font-family: inherit; font-size: 11px; }
-        .grand-total { font-size: 14px !important; font-weight: 700; color: #0f172a !important; border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 4px; }
-
-        .terms-grid { width: 100%; border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 10px; }
-        .terms-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
-        .terms-table td { border: none; padding: 2px 10px 2px 0; vertical-align: top; }
-        .terms-table .col-title { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; padding-bottom: 6px; }
-        .terms-table strong { color: #1e293b; display: block; padding-top: 2px; }
-        .terms-table input { width: 100%; border: 1px solid transparent; background: transparent; padding: 2px; font-family: inherit; font-size: 11px; color: #1e293b; box-sizing: border-box; }
-        .terms-table input:hover { border-color: #cbd5e1; background: #f8fafc; }
-        
-        .bank-details { font-size: 10px; color: #475569; line-height: 1.5; }
-        .bank-details strong { color: #1e293b; font-weight: 600; }
-
-        .footer { text-align: center; margin-top: 12px; font-size: 9px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 8px; letter-spacing: 0.5px; }
-        .remove-btn { background: #ef4444 !important; color: white !important; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px; font-weight: 600; }
-        
-        @media print {
-            body { padding: 0; background: #fff; }
-            .controls, .remove-btn, .hide-print { display: none !important; }
-            #quote-document { box-shadow: none; padding: 10px; max-width: 100%; border: none; }
-            input, select, textarea { border: none !important; background: transparent !important; }
-            .info-card, .totals-section { border: 1px solid #e2e8f0; background: #f8fafc !important; -webkit-print-color-adjust: exact; }
-            th { background: #0f172a !important; color: white !important; -webkit-print-color-adjust: exact; }
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 900px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: auto; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: right; }
+        th { background-color: #f8f9fa; }
+        input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 8px; box-sizing: border-box; font-family: inherit; }
+        textarea { resize: vertical; height: 100px; }
+        button { background-color: #0056b3; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        button:hover { background-color: #004494; }
+        .totals { background: #e9ecef; padding: 15px; border-radius: 5px; font-weight: bold; font-size: 1.2em; }
+        .remove-btn { background-color: #dc3545; padding: 5px 10px; }
+        .remove-btn:hover { background-color: #c82333; }
+        .notes-section { margin-top: 30px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-
-<div class="controls">
-    <button type="button" class="btn-primary" onclick="addHWItem()">+ Add Hardware</button>
-    <button type="button" class="btn-primary" onclick="addSaaSItem()">+ Add SaaS</button>
-    <select id="currency-selector" onchange="updateCurrency()">
-        <option value="USD">Currency: USD ($)</option>
-        <option value="EUR">Currency: EUR (€)</option>
-        <option value="ILS">Currency: ILS (₪)</option>
-    </select>
-    <button type="button" class="btn-success" onclick="generatePDF()">Export to PDF</button>
-</div>
-
-<div id="quote-document">
-    <div class="header">
-        <div class="logo-area">
-            <img src="logo.png" alt="t42 Logo">
+    <div class="container">
+        <h1>מחולל הצעות מחיר - t42</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <label><strong>מטבע:</strong></label>
+            <select id="currency" onchange="calculateTotals()" style="width: auto; margin-right: 10px;">
+                <option value="$">USD ($)</option>
+                <option value="€">EUR (€)</option>
+                <option value="₪">ILS (₪)</option>
+            </select>
         </div>
-        <div class="doc-meta">
-            <div class="doc-title-main">Sales Quotation</div>
-            <strong>Date:</strong> <input type="date" id="quote-date">
-            <strong>Quotation No:</strong> <input type="text" value="Q-202611001">
-            <strong>L.T. No:</strong> <input type="text" value="513608943" readonly>
-            <strong>Sales Rep:</strong> <input type="text" value="Benny Ohayon">
-            <strong>Email:</strong> <input type="text" value="bennyo@t42.co.uk">
-        </div>
-    </div>
 
-    <div class="customer-info">
-        <div class="info-card">
-            <div class="info-card-title">Bill To</div>
-            <input type="text" class="bold-input" placeholder="Company Name">
-            <input type="text" placeholder="Contact Person">
-            <textarea placeholder="Full Billing Address" rows="2"></textarea>
-        </div>
-        <div class="info-card">
-            <div class="info-card-title">Ship To</div>
-            <input type="text" class="bold-input" placeholder="Same as Billing / Company Name">
-            <input type="text" placeholder="Shipping Email / Phone">
-            <textarea placeholder="Full Shipping Address" rows="2"></textarea>
-        </div>
-    </div>
-
-    <table id="hw-table">
-        <thead>
-            <tr>
-                <th style="width: 7%;">Qty</th>
-                <th style="width: 25%;">Item No. (PN)</th>
-                <th style="width: 38%;">Description</th>
-                <th style="width: 15%; text-align: right;">Unit Price (<span class="cur-sym">$</span>)</th>
-                <th style="width: 15%; text-align: right;">Total (<span class="cur-sym">$</span>)</th>
-                <th style="width: 5%;" class="hide-print"></th>
-            </tr>
-        </thead>
-        <tbody id="hw-body">
-        </tbody>
-    </table>
-
-    <div class="totals-wrapper">
-        <div class="totals-section">
-            <div><span>Subtotal:</span> <span id="hw-subtotal" style="font-weight: 500; color: #1e293b;">0.00</span></div>
-            <div><span>Discount (%):</span> <input type="number" id="discount-pct" value="0" min="0" onchange="calculateTotals()"></div>
-            <div><span>Shipping Cost:</span> <input type="number" id="shipping-cost" value="0" min="0" onchange="calculateTotals()"></div>
-            <div class="grand-total"><span>Total Due (HW):</span> <span id="hw-grand-total">0.00</span></div>
-        </div>
-    </div>
-
-    <div class="section-title">Software & SaaS (Monthly Recurring)</div>
-    <table id="saas-table">
-        <thead>
-            <tr>
-                <th style="width: 7%;">Qty</th>
-                <th style="width: 25%;">Item No. (PN)</th>
-                <th style="width: 38%;">Description</th>
-                <th style="width: 15%; text-align: right;">Monthly Fee (<span class="cur-sym">$</span>)</th>
-                <th style="width: 15%; text-align: right;">Total/Mo (<span class="cur-sym">$</span>)</th>
-                <th style="width: 5%;" class="hide-print"></th>
-            </tr>
-        </thead>
-        <tbody id="saas-body">
-        </tbody>
-    </table>
-
-    <div class="terms-grid">
-        <table class="terms-table">
-            <tr>
-                <td style="width: 50%;" class="col-title">Commercial Terms</td>
-                <td style="width: 50%;" class="col-title">Bank Details</td>
-            </tr>
-            <tr>
-                <td>
-                    <table style="width:100%; border:none; margin:0; padding:0; font-size:11px; table-layout: fixed;">
-                        <tr><td style="width: 110px; border:none; padding:1px 0;"><strong>HW Payment:</strong></td><td style="border:none; padding:1px 0;"><input type="text" value="70% Advance with PO / 30% Balance 48 hours before shipment"></td></tr>
-                        <tr><td style="border:none; padding:1px 0;"><strong>SW Payment:</strong></td><td style="border:none; padding:1px 0;"><input type="text" value="NET +15"></td></tr>
-                        <tr><td style="border:none; padding:1px 0;"><strong>Delivery Terms:</strong></td><td style="border:none; padding:1px 0;"><input type="text" value="Ex-Works"></td></tr>
-                        <tr><td style="border:none; padding:1px 0;"><strong>Delivery Date:</strong></td><td style="border:none; padding:1px 0;"><input type="text" value="TBD"></td></tr>
-                    </table>
-                </td>
-                <td>
-                    <div class="bank-details">
-                        <strong>POALIM BANK LTD</strong><br>
-                        ACCOUNT NUMBER: 124635<br>
-                        BANK BRANCH: HAGALIM<br>
-                        BIC CODE: POALILIT<br>
-                        IBAN: IL03-0125-8400-0000-0124-635<br>
-                        BANK ADDRESS: SDEROT ABBA EVEN 5, HERZLIYA
-                    </div>
-                </td>
-            </tr>
+        <h2>חומרה (Hardware) - תשלום חד פעמי</h2>
+        <table id="hw-table">
+            <thead>
+                <tr>
+                    <th>מק"ט / תיאור</th>
+                    <th>מחיר יחידה</th>
+                    <th>כמות</th>
+                    <th>סה"כ שורה</th>
+                    <th style="width: 80px;">פעולה</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" class="hw-sku" placeholder="הזן מק״ט או תיאור פריט..."></td>
+                    <td><input type="number" class="hw-price" min="0" value="0" step="0.01" oninput="calculateTotals()"></td>
+                    <td><input type="number" class="hw-qty" min="1" value="1" oninput="calculateTotals()"></td>
+                    <td class="hw-row-total">0.00</td>
+                    <td><button class="remove-btn" onclick="removeRow(this)">הסר</button></td>
+                </tr>
+            </tbody>
         </table>
+        <button onclick="addRow('hw-table')">הוסף שורת חומרה</button>
+
+        <h2 style="margin-top: 30px;">תוכנה ושירותים (SaaS) - תשלום מחזורי</h2>
+        <table id="sw-table">
+            <thead>
+                <tr>
+                    <th>מק"ט / תיאור</th>
+                    <th>מחיר יחידה (חודשי/שנתי)</th>
+                    <th>כמות</th>
+                    <th>סה"כ שורה</th>
+                    <th style="width: 80px;">פעולה</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" class="sw-sku" placeholder="הזן מק״ט או תיאור רישיון..."></td>
+                    <td><input type="number" class="sw-price" min="0" value="0" step="0.01" oninput="calculateTotals()"></td>
+                    <td><input type="number" class="sw-qty" min="1" value="1" oninput="calculateTotals()"></td>
+                    <td class="sw-row-total">0.00</td>
+                    <td><button class="remove-btn" onclick="removeRow(this)">הסר</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <button onclick="addRow('sw-table')">הוסף שורת תוכנה/SaaS</button>
+
+        <h2 style="margin-top: 30px;">שילוח (Shipping)</h2>
+        <table id="shipping-table" style="width: 50%;">
+            <tbody>
+                <tr>
+                    <td><strong>עלות שילוח כוללת:</strong></td>
+                    <td><input type="number" id="shipping-cost" min="0" value="0" step="0.01" oninput="calculateTotals()"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="notes-section">
+            <h2>הערות כלליות</h2>
+            <textarea id="general-notes" placeholder="הזן הערות להצעת המחיר, תנאי תשלום, מועדי אספקה או כל מידע רלוונטי אחר..."></textarea>
+        </div>
+
+        <div class="totals">
+            <p>סה"כ חומרה ושילוח (חיוב מיידי): <span id="total-onetime">0.00</span> <span class="curr-symbol">$</span></p>
+            <p>סה"כ מנוי SaaS (חיוב מחזורי עתידי): <span id="total-recurring">0.00</span> <span class="curr-symbol">$</span></p>
+        </div>
     </div>
 
-    <div class="footer">
-        Ramatayim Road 96, Hod HaSharon 4532532, Israel &nbsp;|&nbsp; Phone: +972-3-6199901 &nbsp;|&nbsp; Fax: +972-3-6199954 &nbsp;|&nbsp; www.t42.co.uk
-    </div>
-</div>
-
-<script>
-    const hwProducts = [
-        { pn: "", desc: "-- Custom / Manual --", price: 0 },
-        { pn: "AMP20908", desc: "Lokies 4G3G /USB C", price: 210 },
-        { pn: "AMP20909", desc: "Lokies- NO SHACKEL -Quectel", price: 193 },
-        { pn: "AMP2226", desc: "M Rechargeable (Kylos)", price: 75 },
-        { pn: "AMP21053", desc: "Helios M 4G EU with 1m cable", price: 70 },
-        { pn: "ASS52105L_4G_CAT1", desc: "Tetis 1 Long V2 4G Cat-1 NO BATTERY", price: 257 },
-        { pn: "ASS10368", desc: "Standard Shackle", price: 17 }
-    ];
-
-    const saasProducts = [
-        { pn: "", desc: "-- Custom / Manual --", price: 0 },
-        { pn: "amp10217", desc: "Lokies - Web application usage during", price: 3 },
-        { pn: "AMP10214", desc: "Tetis - Web application usage during", price: 6 },
-        { pn: "AMP10205", desc: "Helios TT - Web application usage during", price: 1.5 }
-    ];
-
-    let currentCurrency = "$";
-    document.getElementById('quote-date').valueAsDate = new Date();
-
-    function updateCurrency() {
-        const sel = document.getElementById('currency-selector').value;
-        currentCurrency = sel === 'EUR' ? '€' : (sel === 'ILS' ? '₪' : '$');
-        document.querySelectorAll('.cur-sym').forEach(el => el.innerText = currentCurrency);
-        calculateTotals();
-    }
-
-    function generateRowHTML(isSaaS) {
-        const products = isSaaS ? saasProducts : hwProducts;
-        let options = products.map(p => `<option value="${p.pn}" data-desc="${p.desc}" data-price="${p.price}">${p.pn} - ${p.desc}</option>`).join('');
-        
-        return `
-            <tr>
-                <td><input type="number" value="1" min="1" onchange="calculateTotals()" class="qty-input"></td>
-                <td>
-                    <select class="item-select" onchange="updateRowData(this)">
-                        ${options}
-                    </select>
-                </td>
-                <td><input type="text" class="desc-input"></td>
-                <td><input type="number" class="price-input" onchange="calculateTotals()" step="0.01" style="text-align: right;"></td>
-                <td class="total-cell" style="text-align: right;">0.00</td>
-                <td class="hide-print"><button type="button" class="remove-btn" onclick="this.closest('tr').remove(); calculateTotals();">X</button></td>
-            </tr>
-        `;
-    }
-
-    function addHWItem() { document.getElementById('hw-body').insertAdjacentHTML('beforeend', generateRowHTML(false)); }
-    function addSaaSItem() { document.getElementById('saas-body').insertAdjacentHTML('beforeend', generateRowHTML(true)); }
-
-    function updateRowData(selectEl) {
-        const selected = selectEl.options[selectEl.selectedIndex];
-        const tr = selectEl.closest('tr');
-        tr.querySelector('.desc-input').value = selected.getAttribute('data-desc');
-        tr.querySelector('.price-input').value = selected.getAttribute('data-price');
-        calculateTotals();
-    }
-
-    function formatNumber(num) {
-        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function calculateTotals() {
-        let hwSub = 0;
-        document.querySelectorAll('#hw-body tr').forEach(tr => {
-            const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
-            const price = parseFloat(tr.querySelector('.price-input').value) || 0;
-            const total = qty * price;
-            tr.querySelector('.total-cell').innerText = formatNumber(total);
-            hwSub += total;
-        });
-        
-        document.getElementById('hw-subtotal').innerText = formatNumber(hwSub);
-        
-        const discPct = parseFloat(document.getElementById('discount-pct').value) || 0;
-        const discountAmt = hwSub * (discPct / 100);
-        const shipping = parseFloat(document.getElementById('shipping-cost').value) || 0;
-        
-        const hwGrand = (hwSub - discountAmt) + shipping;
-        document.getElementById('hw-grand-total').innerText = currentCurrency + " " + formatNumber(hwGrand);
-
-        document.querySelectorAll('#saas-body tr').forEach(tr => {
-            const qty = parseFloat(tr.querySelector('.qty-input').value) || 0;
-            const price = parseFloat(tr.querySelector('.price-input').value) || 0;
-            const total = qty * price;
-            tr.querySelector('.total-cell').innerText = formatNumber(total);
-        });
-    }
-
-    function generatePDF() {
-        const printHidden = document.querySelectorAll('.hide-print, .controls');
-        printHidden.forEach(el => el.style.display = 'none');
-        
-        const inputs = document.querySelectorAll('#quote-document input, #quote-document select, #quote-document textarea');
-        inputs.forEach(el => {
-            const div = document.createElement('div');
-            div.className = 'temp-pdf-text';
-            div.style.cssText = window.getComputedStyle(el).cssText;
-            div.style.height = 'auto';
-            div.style.minHeight = el.offsetHeight + 'px';
-            div.style.whiteSpace = 'pre-wrap';
+    <script>
+        function addRow(tableId) {
+            const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            const isHW = tableId === 'hw-table';
+            const prefix = isHW ? 'hw' : 'sw';
+            const placeholder = isHW ? 'הזן מק״ט או תיאור פריט...' : 'הזן מק״ט או תיאור רישיון...';
             
-            let content = '';
-            if (el.tagName === 'SELECT') {
-                content = el.options[el.selectedIndex].text;
-            } else {
-                content = el.value;
-            }
-            
-            if (!content && el.placeholder) {
-                div.innerText = el.placeholder;
-                div.style.color = '#94a3b8';
-            } else {
-                div.innerText = content;
-            }
-            
-            el.style.display = 'none';
-            el.parentNode.insertBefore(div, el);
-        });
+            newRow.innerHTML = `
+                <td><input type="text" class="${prefix}-sku" placeholder="${placeholder}"></td>
+                <td><input type="number" class="${prefix}-price" min="0" value="0" step="0.01" oninput="calculateTotals()"></td>
+                <td><input type="number" class="${prefix}-qty" min="1" value="1" oninput="calculateTotals()"></td>
+                <td class="${prefix}-row-total">0.00</td>
+                <td><button class="remove-btn" onclick="removeRow(this)">הסר</button></td>
+            `;
+        }
 
-        const element = document.getElementById('quote-document');
-        const opt = {
-            margin:       [0.2, 0.2, 0.2, 0.2],
-            filename:     't42_Quotation.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
+        function removeRow(btn) {
+            const row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            calculateTotals();
+        }
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            printHidden.forEach(el => el.style.display = '');
-            document.querySelectorAll('.temp-pdf-text').forEach(el => el.remove());
-            inputs.forEach(el => el.style.display = '');
-        });
-    }
+        function calculateTotals() {
+            const currencySymbol = document.getElementById('currency').value;
+            document.querySelectorAll('.curr-symbol').forEach(el => el.innerText = currencySymbol);
 
-    addHWItem();
-</script>
+            let totalOneTime = parseFloat(document.getElementById('shipping-cost').value) || 0;
+            let totalRecurring = 0;
+
+            // חישוב חומרה
+            const hwRows = document.querySelectorAll('#hw-table tbody tr');
+            hwRows.forEach(row => {
+                const price = parseFloat(row.querySelector('.hw-price').value) || 0;
+                const qty = parseFloat(row.querySelector('.hw-qty').value) || 0;
+                const rowTotal = price * qty;
+                row.querySelector('.hw-row-total').innerText = rowTotal.toFixed(2);
+                totalOneTime += rowTotal;
+            });
+
+            // חישוב תוכנה SaaS
+            const swRows = document.querySelectorAll('#sw-table tbody tr');
+            swRows.forEach(row => {
+                const price = parseFloat(row.querySelector('.sw-price').value) || 0;
+                const qty = parseFloat(row.querySelector('.sw-qty').value) || 0;
+                const rowTotal = price * qty;
+                row.querySelector('.sw-row-total').innerText = rowTotal.toFixed(2);
+                totalRecurring += rowTotal;
+            });
+
+            document.getElementById('total-onetime').innerText = totalOneTime.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('total-recurring').innerText = totalRecurring.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    </script>
 </body>
 </html>
