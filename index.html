@@ -49,8 +49,6 @@
         
         .ils-toggle-row { font-size: 10px !important; color: #64748b !important; justify-content: flex-end !important; gap: 5px; margin-top: 4px; margin-bottom: 0 !important; }
         .ils-toggle-row input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; }
-        .manual-ils-input { width: 110px !important; text-align: right; border: 1px solid #cbd5e1; padding: 2px 4px; border-radius: 4px; background: #fff; font-family: inherit; font-size: 14px; font-weight: 700; color: #0f172a; }
-        .manual-vat-input { width: 80px !important; text-align: right; border: 1px solid #cbd5e1; padding: 2px 4px; border-radius: 4px; background: #fff; font-family: inherit; font-size: 11px; color: #1e293b; }
 
         /* General Notes Box */
         .notes-box { background: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
@@ -142,23 +140,20 @@
 
     <div class="totals-wrapper">
         <div class="totals-section">
+            <div id="ils-rate-row" class="hide-print" style="display: none;">
+                <span>Exchange Rate (ILS):</span>
+                <input type="number" id="ils-rate" value="3.326" step="0.001" min="0" onchange="calculateTotals()">
+            </div>
             <div><span>Subtotal:</span> <span id="hw-subtotal" style="font-weight: 500; color: #1e293b;">0.00</span></div>
             <div><span>Discount (%):</span> <input type="number" id="discount-pct" value="0" min="0" onchange="calculateTotals()"></div>
             <div><span>Shipping Cost:</span> <input type="number" id="shipping-cost" value="0" min="0" onchange="calculateTotals()"></div>
             <div id="hw-vat-row" style="display: none;">
                 <span>VAT (18%):</span>
-                <span style="display: inline-flex; align-items: center; gap: 3px;">
-                    <span>₪</span>
-                    <input type="text" id="hw-manual-vat" class="manual-vat-input" placeholder="0.00">
-                </span>
+                <span id="hw-vat-amount" style="font-weight: 500; color: #1e293b;">₪ 0.00</span>
             </div>
             <div class="grand-total">
                 <span>Total Due (HW):</span>
                 <span id="hw-grand-total">$ 0.00</span>
-                <span id="hw-ils-wrapper" style="display: none; align-items: center; gap: 3px;">
-                    <span>₪</span>
-                    <input type="text" id="hw-manual-ils" class="manual-ils-input" placeholder="0.00">
-                </span>
             </div>
             <div class="ils-toggle-row hide-print">
                 <input type="checkbox" id="ils-override-toggle" onchange="toggleILSMode()">
@@ -248,9 +243,9 @@
 
     function toggleILSMode() {
         const isILS = document.getElementById('ils-override-toggle').checked;
-        document.getElementById('hw-grand-total').style.display = isILS ? 'none' : 'inline';
-        document.getElementById('hw-ils-wrapper').style.display = isILS ? 'inline-flex' : 'none';
+        document.getElementById('ils-rate-row').style.display = isILS ? 'flex' : 'none';
         document.getElementById('hw-vat-row').style.display = isILS ? 'flex' : 'none';
+        calculateTotals();
     }
 
     function generateRowHTML(isSaaS) {
@@ -283,14 +278,27 @@
             hwSub += total;
         });
         
-        document.getElementById('hw-subtotal').innerText = formatNumber(hwSub);
-        
+        const isILS = document.getElementById('ils-override-toggle').checked;
         const discPct = parseFloat(document.getElementById('discount-pct').value) || 0;
-        const discountAmt = hwSub * (discPct / 100);
         const shipping = parseFloat(document.getElementById('shipping-cost').value) || 0;
-        
-        const hwGrand = (hwSub - discountAmt) + shipping;
-        document.getElementById('hw-grand-total').innerText = currentCurrency + " " + formatNumber(hwGrand);
+
+        if (isILS) {
+            const rate = parseFloat(document.getElementById('ils-rate').value) || 1;
+            const hwSubILS = hwSub * rate;
+            const discountAmtILS = hwSubILS * (discPct / 100);
+            const baseILS = (hwSubILS - discountAmtILS) + shipping;
+            const vatILS = baseILS * 0.18;
+            const hwGrandILS = baseILS + vatILS;
+
+            document.getElementById('hw-subtotal').innerText = "₪ " + formatNumber(hwSubILS);
+            document.getElementById('hw-vat-amount').innerText = "₪ " + formatNumber(vatILS);
+            document.getElementById('hw-grand-total').innerText = "₪ " + formatNumber(hwGrandILS);
+        } else {
+            document.getElementById('hw-subtotal').innerText = formatNumber(hwSub);
+            const discountAmt = hwSub * (discPct / 100);
+            const hwGrand = (hwSub - discountAmt) + shipping;
+            document.getElementById('hw-grand-total').innerText = currentCurrency + " " + formatNumber(hwGrand);
+        }
 
         let saasSub = 0;
         document.querySelectorAll('#saas-body tr').forEach(tr => {
