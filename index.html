@@ -8,6 +8,9 @@
     <style>
         body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background: #eef2f5; color: #1e293b; margin: 0; padding: 20px; }
         
+        .top-bar { max-width: 900px; margin: 0 auto 10px auto; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+        .top-bar select { padding: 5px 10px; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; font-family: inherit; font-size: 12px; color: #1e293b; cursor: pointer; }
+
         #quote-document { background: #fff; padding: 25px 35px; border-radius: 4px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto; box-sizing: border-box; position: relative; }
         
         .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
@@ -41,8 +44,12 @@
         .totals-wrapper { display: flex; justify-content: flex-end; margin-bottom: 12px; }
         .totals-section { width: 280px; background: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .totals-section div { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; color: #475569; align-items: center; }
-        .totals-section input { width: 70px; text-align: right; border: 1px solid #cbd5e1; padding: 2px 4px; border-radius: 4px; background: #fff; font-family: inherit; font-size: 11px; }
+        .totals-section input[type="number"] { width: 70px; text-align: right; border: 1px solid #cbd5e1; padding: 2px 4px; border-radius: 4px; background: #fff; font-family: inherit; font-size: 11px; }
         .grand-total { font-size: 14px !important; font-weight: 700; color: #0f172a !important; border-top: 1px solid #e2e8f0; padding-top: 6px; margin-top: 4px; }
+        
+        .ils-toggle-row { font-size: 10px !important; color: #64748b !important; justify-content: flex-end !important; gap: 5px; margin-top: 4px; margin-bottom: 0 !important; }
+        .ils-toggle-row input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; }
+        .manual-ils-input { width: 110px !important; text-align: right; border: 1px solid #cbd5e1; padding: 2px 4px; border-radius: 4px; background: #fff; font-family: inherit; font-size: 14px; font-weight: 700; color: #0f172a; }
 
         /* General Notes Box */
         .notes-box { background: #f8fafc; padding: 10px 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
@@ -66,7 +73,7 @@
         
         @media print {
             body { padding: 0; background: #fff; }
-            .remove-btn, .hide-print { display: none !important; }
+            .remove-btn, .hide-print, .top-bar { display: none !important; }
             #quote-document { box-shadow: none; padding: 10px; max-width: 100%; border: none; }
             input, textarea { border: none !important; background: transparent !important; }
             .info-card, .totals-section, .notes-box { border: 1px solid #e2e8f0; background: #f8fafc !important; -webkit-print-color-adjust: exact; }
@@ -75,6 +82,14 @@
     </style>
 </head>
 <body>
+
+<div class="top-bar hide-print">
+    <label for="currency-selector" style="font-size: 12px; color: #475569; font-weight: 600;">Quote Currency:</label>
+    <select id="currency-selector" onchange="updateCurrency()">
+        <option value="USD">USD ($)</option>
+        <option value="EUR">EUR (€)</option>
+    </select>
+</div>
 
 <div id="quote-document">
     <div class="header">
@@ -112,8 +127,8 @@
                 <th style="width: 7%;">Qty</th>
                 <th style="width: 25%;">Item No. (PN)</th>
                 <th style="width: 38%;">Description</th>
-                <th style="width: 15%; text-align: right;">Unit Price ($)</th>
-                <th style="width: 15%; text-align: right;">Total ($)</th>
+                <th style="width: 15%; text-align: right;">Unit Price (<span class="cur-sym">$</span>)</th>
+                <th style="width: 15%; text-align: right;">Total (<span class="cur-sym">$</span>)</th>
                 <th style="width: 5%;" class="hide-print"></th>
             </tr>
         </thead>
@@ -129,7 +144,18 @@
             <div><span>Subtotal:</span> <span id="hw-subtotal" style="font-weight: 500; color: #1e293b;">0.00</span></div>
             <div><span>Discount (%):</span> <input type="number" id="discount-pct" value="0" min="0" onchange="calculateTotals()"></div>
             <div><span>Shipping Cost:</span> <input type="number" id="shipping-cost" value="0" min="0" onchange="calculateTotals()"></div>
-            <div class="grand-total"><span>Total Due (HW):</span> <span id="hw-grand-total">0.00</span></div>
+            <div class="grand-total">
+                <span>Total Due (HW):</span>
+                <span id="hw-grand-total">$ 0.00</span>
+                <span id="hw-ils-wrapper" style="display: none; align-items: center; gap: 3px;">
+                    <span>₪</span>
+                    <input type="text" id="hw-manual-ils" class="manual-ils-input" placeholder="0.00">
+                </span>
+            </div>
+            <div class="ils-toggle-row hide-print">
+                <input type="checkbox" id="ils-override-toggle" onchange="toggleILSMode()">
+                <label for="ils-override-toggle" style="cursor: pointer;">Show Total in ILS (₪)</label>
+            </div>
         </div>
     </div>
 
@@ -140,8 +166,8 @@
                 <th style="width: 7%;">Qty</th>
                 <th style="width: 25%;">Item No. (PN)</th>
                 <th style="width: 38%;">Description</th>
-                <th style="width: 15%; text-align: right;">Monthly Fee ($)</th>
-                <th style="width: 15%; text-align: right;">Total/Mo ($)</th>
+                <th style="width: 15%; text-align: right;">Monthly Fee (<span class="cur-sym">$</span>)</th>
+                <th style="width: 15%; text-align: right;">Total/Mo (<span class="cur-sym">$</span>)</th>
                 <th style="width: 5%;" class="hide-print"></th>
             </tr>
         </thead>
@@ -202,7 +228,21 @@
 </div>
 
 <script>
+    let currentCurrency = "$";
     document.getElementById('quote-date').valueAsDate = new Date();
+
+    function updateCurrency() {
+        const sel = document.getElementById('currency-selector').value;
+        currentCurrency = sel === 'EUR' ? '€' : '$';
+        document.querySelectorAll('.cur-sym').forEach(el => el.innerText = currentCurrency);
+        calculateTotals();
+    }
+
+    function toggleILSMode() {
+        const isILS = document.getElementById('ils-override-toggle').checked;
+        document.getElementById('hw-grand-total').style.display = isILS ? 'none' : 'inline';
+        document.getElementById('hw-ils-wrapper').style.display = isILS ? 'inline-flex' : 'none';
+    }
 
     function generateRowHTML(isSaaS) {
         return `
@@ -241,7 +281,7 @@
         const shipping = parseFloat(document.getElementById('shipping-cost').value) || 0;
         
         const hwGrand = (hwSub - discountAmt) + shipping;
-        document.getElementById('hw-grand-total').innerText = "$ " + formatNumber(hwGrand);
+        document.getElementById('hw-grand-total').innerText = currentCurrency + " " + formatNumber(hwGrand);
 
         let saasSub = 0;
         document.querySelectorAll('#saas-body tr').forEach(tr => {
@@ -252,7 +292,7 @@
             saasSub += total;
         });
         
-        document.getElementById('saas-grand-total').innerText = "$ " + formatNumber(saasSub);
+        document.getElementById('saas-grand-total').innerText = currentCurrency + " " + formatNumber(saasSub);
     }
 
     addHWItem();
